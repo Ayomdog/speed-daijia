@@ -12,10 +12,13 @@ import com.atguigu.daijia.model.entity.driver.DriverAccount;
 import com.atguigu.daijia.model.entity.driver.DriverInfo;
 import com.atguigu.daijia.model.entity.driver.DriverLoginLog;
 import com.atguigu.daijia.model.entity.driver.DriverSet;
+import com.atguigu.daijia.model.vo.driver.DriverLoginVo;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
+import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.units.qual.A;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -81,5 +84,28 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
         driverLoginLogMapper.insert(driverLoginLog);
         //5. 返回司机id
         return driverInfo.getId();
+    }
+
+    /**
+     * 获取司机登录信息
+     * @param driverId
+     * @return
+     */
+    @Override
+    public DriverLoginVo getDriverLoginInfo(String driverId) {
+        //1.通过driverId 获取司机信息
+        DriverInfo driverInfo = driverInfoMapper.selectById(driverId);
+        //2. 创建DriverLoginVO 对象
+        DriverLoginVo driverLoginVo = new DriverLoginVo();
+        //3. 拷贝司机信息到DriverLoginVO
+        BeanUtils.copyProperties(driverInfo, driverLoginVo);
+        //4.判断司机是否有人脸id模型
+        String faceModelId = driverInfo.getFaceModelId();
+        if(!StringUtils.isBlank(faceModelId)){
+            //4.1 有则将 isArchiveFace 设置为true
+            driverLoginVo.setIsArchiveFace(true);
+        }
+        //5. 返回
+        return driverLoginVo;
     }
 }

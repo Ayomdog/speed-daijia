@@ -4,6 +4,7 @@ import com.atguigu.daijia.common.constant.RedisConstant;
 import com.atguigu.daijia.common.execption.GuiguException;
 import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.common.result.ResultCodeEnum;
+import com.atguigu.daijia.common.util.AuthContextHolder;
 import com.atguigu.daijia.driver.client.DriverInfoFeignClient;
 import com.atguigu.daijia.driver.service.DriverService;
 import com.atguigu.daijia.model.vo.driver.DriverLoginVo;
@@ -55,5 +56,23 @@ public class DriverServiceImpl implements DriverService {
                                             TimeUnit.SECONDS);
         //7.返回token
         return token;
+    }
+
+    @Override
+    public DriverLoginVo getDriverLoginInfo() {
+        //1. 获取司机id
+        Long driverId = AuthContextHolder.getUserId();
+        //2.远程调用获取司机信息
+        Result<DriverLoginVo> data = client.getDriverLoginInfo(driverId.toString());
+        Integer status = data.getCode();
+        if(status != 200){
+            throw new GuiguException(ResultCodeEnum.DATA_ERROR);
+        }
+        DriverLoginVo driverLoginVo = data.getData();
+        if(driverLoginVo == null){
+            throw new GuiguException(ResultCodeEnum.DATA_ERROR);
+        }
+        //3. 返回
+        return driverLoginVo;
     }
 }

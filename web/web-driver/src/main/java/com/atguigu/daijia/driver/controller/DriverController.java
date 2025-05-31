@@ -1,5 +1,6 @@
 package com.atguigu.daijia.driver.controller;
 
+import com.atguigu.daijia.common.login.AyomLogin;
 import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.driver.service.DriverService;
 import com.atguigu.daijia.model.vo.driver.DriverLoginVo;
@@ -28,5 +29,12 @@ public class DriverController {
         return Result.ok(driverService.login(code));
     }
 
+    @Operation(summary = "获取司机登录信息")
+    @AyomLogin
+    @GetMapping("/getDriverLoginInfo")
+    public Result<DriverLoginVo> getDriverLoginInfo() {
+        DriverLoginVo driverLoginVo =  driverService.getDriverLoginInfo();
+        return Result.ok(driverLoginVo);
+    }
 }
 

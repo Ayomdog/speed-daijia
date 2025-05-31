@@ -7,4 +7,7 @@ public interface DriverService {
 
     //小程序登录
     String login(String driverId);
+
+    //获取司机登录信息
+    DriverLoginVo getDriverLoginInfo();
 }
