@@ -30,7 +30,7 @@ public class DriverController {
     }
 
     @Operation(summary = "获取司机登录信息")
-    @AyomLogin
+    //@AyomLogin
     @GetMapping("/getDriverLoginInfo")
     public Result<DriverLoginVo> getDriverLoginInfo() {
         DriverLoginVo driverLoginVo =  driverService.getDriverLoginInfo();

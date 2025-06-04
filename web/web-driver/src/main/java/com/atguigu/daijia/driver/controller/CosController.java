@@ -17,16 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class CosController {
 
-    @Autowired
-    private  CosService cosService;
-
-    @Operation(summary = "上传")
-    @PostMapping("/upload")
-    public Result<CosUploadVo> upload(@RequestPart("file") MultipartFile multipartFile,
-                                      @RequestParam(name = "path",defaultValue = "auth") String path){
-        CosUploadVo cosUploadVo =  cosService.upload(multipartFile,path);
-        return Result.ok(cosUploadVo);
-    }
 
 }
 

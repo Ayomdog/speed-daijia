@@ -22,7 +22,7 @@ public class CosController {
 
     @Operation(summary = "上传")
     @PostMapping("/upload")
-    public Result<CosUploadVo> upload(@RequestPart MultipartFile file, @RequestParam String path){
+    public Result<CosUploadVo> upload(@RequestPart("file") MultipartFile file, @RequestParam("path") String path){
         CosUploadVo cosUploadVo = cosService.upload(file, path);
         return Result.ok(cosUploadVo);
     }

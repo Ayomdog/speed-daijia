@@ -6,19 +6,21 @@ import com.atguigu.daijia.model.vo.driver.CosUploadVo;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.ClientConfig;
 import com.qcloud.cos.auth.BasicCOSCredentials;
+import com.qcloud.cos.http.HttpMethodName;
 import com.qcloud.cos.http.HttpProtocol;
-import com.qcloud.cos.model.ObjectMetadata;
-import com.qcloud.cos.model.PutObjectRequest;
-import com.qcloud.cos.model.PutObjectResult;
-import com.qcloud.cos.model.StorageClass;
+import com.qcloud.cos.model.*;
 import com.qcloud.cos.region.Region;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.cms.PasswordRecipientId;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.Date;
 import java.util.UUID;
 
 @Slf4j
@@ -38,17 +40,7 @@ public class CosServiceImpl implements CosService {
      */
     @Override
     public CosUploadVo upload(MultipartFile file, String path) {
-        //1.获取腾讯云COS的配置信息
-        String secretId = tencentCloudProperties.getSecretId();
-        String secretKey = tencentCloudProperties.getSecretKey();
-        BasicCOSCredentials cred = new BasicCOSCredentials(secretId, secretKey);
-        // 2 设置 bucket 的地域, COS 地域
-        Region region = new Region(tencentCloudProperties.getRegion());
-        ClientConfig clientConfig = new ClientConfig(region);
-        // 这里建议设置使用 https 协议
-        clientConfig.setHttpProtocol(HttpProtocol.https);
-        // 3 生成 cos 客户端。
-        COSClient cosClient = new COSClient(cred, clientConfig);
+        COSClient cosClient = this.getCosClient();
 
         //文件上传
         //元数据信息
@@ -78,8 +70,50 @@ public class CosServiceImpl implements CosService {
         //返回vo对象
         CosUploadVo cosUploadVo = new CosUploadVo();
         cosUploadVo.setUrl(uploadPath);
-        //todo 图片临时访问url，回显使用
-        cosUploadVo.setShowUrl("");
+        // 图片临时访问url，回显使用
+        String imageUrl = this.getImageUrl(uploadPath);
+        cosUploadVo.setShowUrl(imageUrl);
         return cosUploadVo;
     }
+
+    @Override
+    public String getImageUrl(String path) {
+        //1.判断路径是否为空
+        if(StringUtils.isBlank(path)){
+            return "";
+        }
+        //2.创建cosClient对象
+        COSClient cosClient = this.getCosClient();
+        GeneratePresignedUrlRequest request =
+                new GeneratePresignedUrlRequest(tencentCloudProperties.getBucketPrivate(),
+                        path, HttpMethodName.GET);
+        //3.设置url有效时间为15分钟
+        Date date = new DateTime().plusMinutes(15).toDate();
+        request.setExpiration(date);
+        //4.调用方法获取
+        URL url = cosClient.generatePresignedUrl(request);
+        return url.toString();
+
+    }
+
+    /**
+     * 创建CosClient对象
+     * @return
+     */
+    private COSClient getCosClient() {
+        //1.获取腾讯云COS的配置信息
+        String secretId = tencentCloudProperties.getSecretId();
+        String secretKey = tencentCloudProperties.getSecretKey();
+        BasicCOSCredentials cred = new BasicCOSCredentials(secretId, secretKey);
+        // 2 设置 bucket 的地域, COS 地域
+        Region region = new Region(tencentCloudProperties.getRegion());
+        ClientConfig clientConfig = new ClientConfig(region);
+        // 这里建议设置使用 https 协议
+        clientConfig.setHttpProtocol(HttpProtocol.https);
+        // 3 生成 cos 客户端。
+        COSClient cosClient = new COSClient(cred, clientConfig);
+        return cosClient;
+    }
+
+
 }

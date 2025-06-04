@@ -8,4 +8,6 @@ public interface CosService {
 
     //上传图片
     CosUploadVo upload(MultipartFile file, String path);
+
+    String getImageUrl(String path);
 }
